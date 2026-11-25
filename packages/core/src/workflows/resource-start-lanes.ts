@@ -4,12 +4,19 @@
  * (`checkout_handoff`). Preparation picks the lane and admission keys it; this lays it out
  * when the run starts.
  */
-import { execFileAsync, toBranchName, toRepoPath, type BranchName } from '@archon/git';
+import {
+  execFileAsync,
+  toBranchName,
+  toRepoPath,
+  toWorktreePath,
+  type BranchName,
+} from '@archon/git';
 import {
   checkWorktreeStartable,
   getIsolationProvider,
   readWorktreeBaseBranch,
   recordWorktreeAdoption,
+  refuseUnappliedStartPoint,
   type WorktreeSetupExecutor,
 } from '@archon/isolation';
 import {
@@ -99,6 +106,13 @@ async function adoptBranchWorktree(
   );
   if (!existing || !(await getIsolationProvider().healthCheck(existing.working_path)))
     return undefined;
+  if (lane.fromBranch)
+    await refuseUnappliedStartPoint(
+      toRepoPath(codebase.default_cwd),
+      toWorktreePath(existing.working_path),
+      lane.branch,
+      lane.fromBranch
+    );
   await recordWorktreeAdoption(host.records.isolation, existing, codebase.default_cwd);
   const resolvedBaseBranch = readWorktreeBaseBranch(existing.metadata);
   return { cwd: existing.working_path, envId: existing.id, resolvedBaseBranch };
