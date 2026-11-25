@@ -173,6 +173,8 @@ nodes:
 
 `intervalSeconds` is required and has no default. `runAtLoad` is also required. Set it to `true` to request one start when the scheduler loads the job, at install and at each login, or `false` to wait for the first interval.
 
+A binding with `launch.isolation: { "kind": "worktree", "branch": "task", "fromBranch": "main" }` reuses a healthy registered worktree for `task` only when its history contains the requested start point. `fromBranch` resolves in the project's canonical repository, so `HEAD` means that repository's HEAD, not the worktree's. If the start point is not contained, the start fails as `launch_failed` before any node runs. The refusal names the worktree, its base, the requested start point, and the options: choose another branch, omit `fromBranch` to continue in the existing checkout, or remove the worktree and delete the branch to start fresh. Archon does not move or remove either to satisfy the request. Without `fromBranch`, or when it is already contained, the worktree is reused as before.
+
 `schedule` itself is optional. A configuration without it is a [fire-only binding](#start-a-binding-only-with-trigger-fire).
 
 Test the binding once before installing it:
